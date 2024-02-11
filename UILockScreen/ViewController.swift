@@ -9,7 +9,8 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var labelOrientation: UILabel!
+    @IBOutlet weak var labelDeviceOrientation: UILabel!
+    @IBOutlet weak var labelInterfaceOrientation: UILabel!
 
     @IBOutlet weak var switchPortrait: UISwitch!
     @IBOutlet weak var switchLandscapeRight: UISwitch!
@@ -21,7 +22,7 @@ class ViewController: UIViewController {
     @IBAction func actionLandscapeLeft(_ sender: Any)       { setSupportedIFOrientations() }
     @IBAction func actionPortraitUpsideDown(_ sender: Any)  { setSupportedIFOrientations() }
 
-//    var windowScene: UIWindowScene?
+    var windowScene: UIWindowScene?
 //    var viewController: UIViewController?
     var supportedIFOrientations: UIInterfaceOrientationMask = [ .portrait ]
 
@@ -39,10 +40,10 @@ class ViewController: UIViewController {
 
     @objc func orientationChanged() {
         let orientation = UIDevice.current.orientation
-        labelOrientation.text = orientationTranslator(orientation)
+        labelDeviceOrientation.text = deviceOrientationTranslator(orientation)
     }
 
-    func orientationTranslator(_ orientation: UIDeviceOrientation) -> String {
+    func deviceOrientationTranslator(_ orientation: UIDeviceOrientation) -> String {
         var message = ""
         switch orientation {
         case .unknown:              message += "unknown"
@@ -58,6 +59,20 @@ class ViewController: UIViewController {
         return message
     }
 
+    func interfaceOrientationTranslator(_ orientation: UIInterfaceOrientation) -> String {
+        var message = ""
+        switch orientation {
+        case .unknown:              message += "unknown"
+        case .portrait:             message += "portrait"
+        case .portraitUpsideDown:   message += "portraitUpsideDown"
+        case .landscapeLeft:        message += "landscapeLeft"
+        case .landscapeRight:       message += "landscapeRight"
+        @unknown default:
+            break
+        }
+        return message
+    }
+
     func setSupportedIFOrientations() {
         var orientation: UInt = 0
         if switchPortrait.isOn              { orientation |= UIInterfaceOrientationMask.portrait.rawValue }
@@ -66,11 +81,16 @@ class ViewController: UIViewController {
         if switchPortraitUpsideDown.isOn    { orientation |= UIInterfaceOrientationMask.portraitUpsideDown.rawValue }
         supportedIFOrientations = UIInterfaceOrientationMask(rawValue: orientation)
 
-//        windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
 //        windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: supportedIFOrientations))
 //        viewController = parentViewController(view: view)
 //        viewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
         self.setNeedsUpdateOfSupportedInterfaceOrientations()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { // Run after 0.1 second
+            self.labelInterfaceOrientation.text =
+                self.interfaceOrientationTranslator(self.windowScene!.interfaceOrientation)
+        }
     }
 
 //    private func parentViewController(view: UIView) -> UIViewController? {
