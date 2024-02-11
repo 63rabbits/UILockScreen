@@ -29,6 +29,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+//        viewController = parentViewController(view: view)
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(ViewController.orientationChanged),
@@ -41,20 +44,22 @@ class ViewController: UIViewController {
     @objc func orientationChanged() {
         let orientation = UIDevice.current.orientation
         labelDeviceOrientation.text = deviceOrientationTranslator(orientation)
+
+        updatelabelIFOrientation()
     }
 
     func deviceOrientationTranslator(_ orientation: UIDeviceOrientation) -> String {
         var message = ""
         switch orientation {
-        case .unknown:              message += "unknown"
-        case .portrait:             message += "portrait"
-        case .portraitUpsideDown:   message += "portraitUpsideDown"
-        case .landscapeLeft:        message += "landscapeLeft"
-        case .landscapeRight:       message += "landscapeRight"
-        case .faceUp:               message += "faceUp"
-        case .faceDown:             message += "faceDown"
-        @unknown default:
-            break
+            case .unknown:              message += "unknown"
+            case .portrait:             message += "portrait"
+            case .portraitUpsideDown:   message += "portraitUpsideDown"
+            case .landscapeLeft:        message += "landscapeLeft"
+            case .landscapeRight:       message += "landscapeRight"
+            case .faceUp:               message += "faceUp"
+            case .faceDown:             message += "faceDown"
+            @unknown default:
+                break
         }
         return message
     }
@@ -62,13 +67,13 @@ class ViewController: UIViewController {
     func interfaceOrientationTranslator(_ orientation: UIInterfaceOrientation) -> String {
         var message = ""
         switch orientation {
-        case .unknown:              message += "unknown"
-        case .portrait:             message += "portrait"
-        case .portraitUpsideDown:   message += "portraitUpsideDown"
-        case .landscapeLeft:        message += "landscapeLeft"
-        case .landscapeRight:       message += "landscapeRight"
-        @unknown default:
-            break
+            case .unknown:              message += "unknown"
+            case .portrait:             message += "portrait"
+            case .portraitUpsideDown:   message += "portraitUpsideDown"
+            case .landscapeLeft:        message += "landscapeLeft"
+            case .landscapeRight:       message += "landscapeRight"
+            @unknown default:
+                break
         }
         return message
     }
@@ -81,16 +86,11 @@ class ViewController: UIViewController {
         if switchPortraitUpsideDown.isOn    { orientation |= UIInterfaceOrientationMask.portraitUpsideDown.rawValue }
         supportedIFOrientations = UIInterfaceOrientationMask(rawValue: orientation)
 
-        windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
 //        windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: supportedIFOrientations))
-//        viewController = parentViewController(view: view)
 //        viewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
         self.setNeedsUpdateOfSupportedInterfaceOrientations()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { // Run after 0.1 second
-            self.labelInterfaceOrientation.text =
-                self.interfaceOrientationTranslator(self.windowScene!.interfaceOrientation)
-        }
+        updatelabelIFOrientation()
     }
 
 //    private func parentViewController(view: UIView) -> UIViewController? {
@@ -103,6 +103,14 @@ class ViewController: UIViewController {
 //        }
 //        return nil
 //    }
+
+    func updatelabelIFOrientation() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { // Run after 0.1 second
+            if let orientation = self.windowScene?.interfaceOrientation {
+                self.labelInterfaceOrientation.text = self.interfaceOrientationTranslator(orientation)
+            }
+        }
+    }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return supportedIFOrientations
